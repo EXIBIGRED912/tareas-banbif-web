@@ -18,3 +18,22 @@ export class ApiError extends Error {
     this.status = status;
   }
 }
+
+export interface AuthUser {
+  username: string;
+  name: string;
+  role: string;
+}
+
+export interface LoginResponse {
+  ok: boolean;
+  message: string;
+  token: string;
+  user: AuthUser;
+}
+
+export interface MeResponse {
+  ok: boolean;
+  message: string;
+  user: AuthUser;
+}

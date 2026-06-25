@@ -1,0 +1,8 @@
+name = "wandering-violet-87c6"
+main = "worker.js"
+compatibility_date = "2026-06-25"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tareas-banbif-db"
+database_id = "7fbb7a6c-abf9-41cc-ac06-9c2222484b44"

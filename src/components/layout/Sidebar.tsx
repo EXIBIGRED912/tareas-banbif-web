@@ -1,12 +1,16 @@
 import { LogOut } from "lucide-react";
+import type { AuthUser } from "../../types/api";
 import { navItems, type PageId } from "./navigation";
 
 interface SidebarProps {
   activePage: PageId;
   onNavigate: (page: PageId) => void;
+  user: AuthUser;
+  onLogout: () => void;
 }
 
-export function Sidebar({ activePage, onNavigate }: SidebarProps) {
+export function Sidebar({ activePage, onNavigate, user, onLogout }: SidebarProps) {
+  const initial = (user.name || user.username || "U").slice(0, 1).toUpperCase();
   return (
     <aside className="fixed inset-y-0 left-0 hidden w-[260px] flex-col bg-banbif-navy p-5 text-white shadow-soft min-[769px]:flex">
       <div className="mb-8">
@@ -33,13 +37,13 @@ export function Sidebar({ activePage, onNavigate }: SidebarProps) {
       </nav>
       <div className="mt-auto rounded-xl border border-white/10 bg-white/5 p-3">
         <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-full bg-banbif-blue font-bold">A</div>
+          <div className="grid h-10 w-10 place-items-center rounded-full bg-banbif-blue font-bold">{initial}</div>
           <div>
-            <div className="text-sm font-bold">Abner</div>
-            <div className="text-xs text-slate-300">Administrador</div>
+            <div className="text-sm font-bold">{user.name || user.username}</div>
+            <div className="text-xs text-slate-300">{user.role}</div>
           </div>
         </div>
-        <button className="mt-4 flex items-center gap-2 text-xs text-slate-300">
+        <button onClick={onLogout} className="mt-4 flex items-center gap-2 text-xs text-slate-300 hover:text-white">
           <LogOut className="h-4 w-4" />
           Cerrar sesion
         </button>

@@ -1,0 +1,4 @@
+AUTH_USERNAME=usuario_demo
+AUTH_PASSWORD_HASH=hash_generado_con_scripts_generate_password_hash
+AUTH_PASSWORD_PEPPER=pepper_demo_no_real
+JWT_SECRET=jwt_secret_demo_no_real

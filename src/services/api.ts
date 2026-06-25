@@ -14,6 +14,7 @@ if (!HAS_CONFIGURED_API_URL) {
 
 type RequestOptions = Omit<RequestInit, "body"> & {
   body?: unknown;
+  skipAuth?: boolean;
 };
 
 async function parseResponse<T>(response: Response): Promise<T> {
@@ -51,6 +52,10 @@ async function parseResponse<T>(response: Response): Promise<T> {
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const headers = new Headers(options.headers);
   headers.set("Accept", "application/json");
+  const token = sessionStorage.getItem("auth_token");
+  if (token && !options.skipAuth) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
@@ -70,6 +75,13 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     return parseResponse<T>(response);
   } catch (error) {
     if (error instanceof ApiError) {
+      if (error.status === 401) {
+        sessionStorage.removeItem("auth_token");
+        sessionStorage.removeItem("auth_user");
+        window.dispatchEvent(new CustomEvent("auth:expired", {
+          detail: { message: "Tu sesion expiro, vuelve a iniciar sesion" },
+        }));
+      }
       throw error;
     }
     console.error("Error tecnico llamando a la API", error);
@@ -87,7 +99,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
 export const api = {
   get: <T>(path: string) => apiRequest<T>(path),
-  post: <T>(path: string, body: unknown) => apiRequest<T>(path, { method: "POST", body }),
+  post: <T>(path: string, body: unknown, options: RequestOptions = {}) => apiRequest<T>(path, { ...options, method: "POST", body }),
   put: <T>(path: string, body?: unknown) => apiRequest<T>(path, { method: "PUT", body }),
   delete: <T>(path: string) => apiRequest<T>(path, { method: "DELETE" }),
 };

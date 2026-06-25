@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { API_BASE_URL, HAS_CONFIGURED_API_URL, api } from "../services/api";
 import { PageTitle } from "./DashboardPage";
 import { Button } from "../components/ui/Button";
+import type { AuthUser } from "../types/api";
 
 interface HealthResponse {
   ok?: boolean;
@@ -9,16 +10,21 @@ interface HealthResponse {
   database?: string;
   tables?: Array<{ name: string }>;
   status?: string;
+  authConfigured?: boolean;
 }
 
 interface SettingsPageProps {
   showDemo: boolean;
   setShowDemo: (value: boolean) => void;
+  user: AuthUser;
+  isAuthenticated: boolean;
+  onLogout: () => void;
 }
 
-export function SettingsPage({ showDemo, setShowDemo }: SettingsPageProps) {
+export function SettingsPage({ showDemo, setShowDemo, user, isAuthenticated, onLogout }: SettingsPageProps) {
   const [health, setHealth] = useState("Verificando...");
   const [tables, setTables] = useState<string[]>([]);
+  const [authConfigured, setAuthConfigured] = useState<boolean | null>(null);
   const [lastCheck, setLastCheck] = useState("");
   const [checking, setChecking] = useState(false);
 
@@ -28,9 +34,11 @@ export function SettingsPage({ showDemo, setShowDemo }: SettingsPageProps) {
       const response = await api.get<HealthResponse>("/health");
       setHealth(response.ok === false ? "API con error" : "API conectada");
       setTables(response.tables?.map((table) => table.name) || []);
+      setAuthConfigured(response.authConfigured ?? null);
     } catch (error) {
       setHealth(error instanceof Error ? `API con error: ${error.message}` : "API con error");
       setTables([]);
+      setAuthConfigured(null);
     } finally {
       setLastCheck(new Intl.DateTimeFormat("es-PE", {
         dateStyle: "short",
@@ -63,6 +71,9 @@ export function SettingsPage({ showDemo, setShowDemo }: SettingsPageProps) {
               <p className="font-bold text-banbif-text">Tablas detectadas</p>
               <p className="mt-1 text-banbif-muted">{tables.length ? tables.join(", ") : "No informado por la API"}</p>
             </div>
+            <p className="text-banbif-muted">
+              Auth Worker: {authConfigured === null ? "No informado" : authConfigured ? "Configurado" : "Pendiente de secretos"}
+            </p>
             <Button variant="secondary" onClick={checkHealth} disabled={checking}>
               {checking ? "Verificando..." : "Probar conexion"}
             </Button>
@@ -74,6 +85,19 @@ export function SettingsPage({ showDemo, setShowDemo }: SettingsPageProps) {
             Cargar ejemplo cuando D1 este vacio
             <input type="checkbox" checked={showDemo} onChange={(e) => setShowDemo(e.target.checked)} className="h-5 w-5 accent-banbif-violet" />
           </label>
+        </article>
+        <article className="rounded-xl border border-banbif-border bg-white p-5 shadow-soft">
+          <h3 className="text-sm font-black">Seguridad</h3>
+          <div className="mt-4 space-y-3 text-sm">
+            <p className="font-semibold text-banbif-text">
+              Estado de sesion: {isAuthenticated ? "Autenticada" : "Sin sesion"}
+            </p>
+            <p className="text-banbif-muted">Usuario: {user.name || user.username}</p>
+            <p className="text-banbif-muted">Rol: {user.role}</p>
+            <Button variant="secondary" onClick={onLogout}>
+              Cerrar sesion
+            </Button>
+          </div>
         </article>
       </section>
       <article className="rounded-xl border border-banbif-border bg-white p-5 shadow-soft">

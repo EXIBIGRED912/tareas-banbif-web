@@ -4,6 +4,8 @@ import type { PageId } from "./components/layout/navigation";
 import { TaskDetailPanel } from "./components/tasks/TaskDetailPanel";
 import { TaskFormDrawer } from "./components/tasks/TaskFormDrawer";
 import { Toast } from "./components/ui/Toast";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { useProjects } from "./hooks/useProjects";
 import { useTasks } from "./hooks/useTasks";
 import { CalendarPage } from "./pages/CalendarPage";
@@ -16,6 +18,17 @@ import { TasksPage } from "./pages/TasksPage";
 import type { Task, TaskFilters, TaskPayload } from "./types/task";
 
 export default function App() {
+  return (
+    <AuthProvider>
+      <ProtectedRoute>
+        <AuthenticatedApp />
+      </ProtectedRoute>
+    </AuthProvider>
+  );
+}
+
+function AuthenticatedApp() {
+  const auth = useAuth();
   const [activePage, setActivePage] = useState<PageId>("dashboard");
   const [globalSearch, setGlobalSearch] = useState("");
   const [filters, setFilters] = useState<TaskFilters>(() => {
@@ -127,6 +140,8 @@ export default function App() {
       onNewTask={openNewTask}
       search={globalSearch}
       onSearch={setGlobalSearch}
+      user={auth.user!}
+      onLogout={auth.logout}
     >
       {activePage === "dashboard" && (
         <DashboardPage
@@ -142,7 +157,7 @@ export default function App() {
       {activePage === "calendar" && <CalendarPage tasks={visibleTasks} />}
       {activePage === "reports" && <ReportsPage tasks={visibleTasks} summary={tasksState.summary} onToast={setToast} />}
       {activePage === "flows" && <FlowsPage />}
-      {activePage === "settings" && <SettingsPage showDemo={tasksState.showDemo} setShowDemo={tasksState.setShowDemo} />}
+      {activePage === "settings" && <SettingsPage showDemo={tasksState.showDemo} setShowDemo={tasksState.setShowDemo} user={auth.user!} isAuthenticated={auth.isAuthenticated} onLogout={auth.logout} />}
 
       <TaskFormDrawer open={formOpen} task={editingTask} projects={projects} onClose={() => setFormOpen(false)} onSave={saveTask} />
       <TaskDetailPanel task={viewingTask} onClose={() => setViewingTask(null)} onEdit={openEditTask} onFinish={finishTask} onDelete={deleteTask} onDuplicate={duplicateTask} />

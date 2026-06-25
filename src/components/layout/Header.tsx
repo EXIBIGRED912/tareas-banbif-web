@@ -1,13 +1,16 @@
 import { Plus, Search } from "lucide-react";
+import type { AuthUser } from "../../types/api";
 import { Button } from "../ui/Button";
 
 interface HeaderProps {
   onNewTask: () => void;
   search: string;
   onSearch: (value: string) => void;
+  user: AuthUser;
 }
 
-export function Header({ onNewTask, search, onSearch }: HeaderProps) {
+export function Header({ onNewTask, search, onSearch, user }: HeaderProps) {
+  const initial = (user.name || user.username || "U").slice(0, 1).toUpperCase();
   return (
     <header className="sticky top-0 z-20 border-b border-banbif-border bg-white/95 backdrop-blur">
       <div className="flex min-h-16 items-center gap-3 px-4 md:px-8">
@@ -24,8 +27,8 @@ export function Header({ onNewTask, search, onSearch }: HeaderProps) {
           Nueva tarea
         </Button>
         <div className="hidden items-center gap-2 rounded-lg border border-banbif-border px-3 py-2 md:flex">
-          <div className="grid h-7 w-7 place-items-center rounded-full bg-banbif-blue text-xs font-bold text-white">A</div>
-          <span className="text-sm font-semibold text-banbif-text">Usuario local</span>
+          <div className="grid h-7 w-7 place-items-center rounded-full bg-banbif-blue text-xs font-bold text-white">{initial}</div>
+          <span className="text-sm font-semibold text-banbif-text">{user.name || user.username}</span>
         </div>
       </div>
     </header>
