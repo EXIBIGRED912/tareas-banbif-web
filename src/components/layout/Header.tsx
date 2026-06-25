@@ -30,20 +30,22 @@ export function Header({ onNewTask, search, onSearch, user, onLogout, onSettings
         <Button onClick={onNewTask} icon={<Plus className="h-4 w-4" />} className="ml-auto">
           Nueva tarea
         </Button>
-        <div className="relative hidden md:block">
+        <div className="relative block">
           <button
             onClick={() => setOpen((value) => !value)}
-            className="flex items-center gap-2 rounded-lg border border-banbif-border px-3 py-2 hover:bg-slate-50"
+            className="flex items-center gap-2 rounded-lg border border-banbif-border px-2 py-2 hover:bg-slate-50 sm:px-3"
+            aria-expanded={open}
+            aria-haspopup="menu"
           >
             <div className="grid h-8 w-8 place-items-center rounded-full bg-banbif-blue text-xs font-bold text-white">{initial}</div>
-            <div className="text-left">
+            <div className="hidden text-left sm:block">
               <div className="text-sm font-bold text-banbif-text">{user.name || user.username}</div>
               <div className="text-xs text-banbif-muted">{user.role}</div>
             </div>
             <ChevronDown className="h-4 w-4 text-banbif-muted" />
           </button>
           {open && (
-            <div className="absolute right-0 top-14 z-40 w-72 rounded-xl border border-banbif-border bg-white p-3 shadow-2xl">
+            <div className="absolute right-0 top-14 z-40 w-[calc(100vw-2rem)] max-w-72 rounded-xl border border-banbif-border bg-white p-3 shadow-2xl">
               <div className="flex items-center gap-3 border-b border-banbif-border p-3">
                 <div className="grid h-12 w-12 place-items-center rounded-full bg-banbif-blue text-base font-black text-white">{initial}</div>
                 <div>
