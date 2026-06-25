@@ -8,8 +8,10 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   loading: boolean;
   error: string;
+  notice: string;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
+  clearNotice: () => void;
   checkSession: () => Promise<void>;
 }
 
@@ -30,10 +32,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(() => readUser());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
 
   const clearSession = useCallback(() => {
     sessionStorage.removeItem("auth_token");
     sessionStorage.removeItem("auth_user");
+    sessionStorage.removeItem("auth_session");
     setToken(null);
     setUser(null);
   }, []);
@@ -55,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setError("");
     } catch {
       clearSession();
-      setError("Tu sesion expiro, vuelve a iniciar sesion");
+      setError("Tu sesión expiró, vuelve a iniciar sesión.");
     } finally {
       setLoading(false);
     }
@@ -63,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (username: string, password: string) => {
     setError("");
+    setNotice("");
     const response = await authService.login(username, password);
     sessionStorage.setItem("auth_token", response.token);
     sessionStorage.setItem("auth_user", JSON.stringify(response.user));
@@ -73,7 +78,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     clearSession();
     setError("");
+    setNotice("Sesión cerrada correctamente");
   }, [clearSession]);
+
+  const clearNotice = useCallback(() => {
+    setNotice("");
+  }, []);
 
   useEffect(() => {
     checkSession();
@@ -83,7 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const onExpired = (event: Event) => {
       clearSession();
       const detail = (event as CustomEvent<{ message?: string }>).detail;
-      setError(detail?.message || "Tu sesion expiro, vuelve a iniciar sesion");
+      setError(detail?.message || "Tu sesión expiró, vuelve a iniciar sesión.");
+      setNotice("");
     };
     window.addEventListener("auth:expired", onExpired);
     return () => window.removeEventListener("auth:expired", onExpired);
@@ -95,10 +106,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: Boolean(token && user),
     loading,
     error,
+    notice,
     login,
     logout,
+    clearNotice,
     checkSession,
-  }), [token, user, loading, error, login, logout, checkSession]);
+  }), [token, user, loading, error, notice, login, logout, clearNotice, checkSession]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

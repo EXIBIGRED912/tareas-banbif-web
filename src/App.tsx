@@ -5,6 +5,7 @@ import { TaskDetailPanel } from "./components/tasks/TaskDetailPanel";
 import { TaskFormDrawer } from "./components/tasks/TaskFormDrawer";
 import { Toast } from "./components/ui/Toast";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { LogoutConfirmModal } from "./components/auth/LogoutConfirmModal";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { useProjects } from "./hooks/useProjects";
 import { useTasks } from "./hooks/useTasks";
@@ -39,6 +40,7 @@ function AuthenticatedApp() {
   const [viewingTask, setViewingTask] = useState<Task | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [toast, setToast] = useState("");
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
   const tasksState = useTasks();
   const projects = useProjects(tasksState.tasks);
@@ -141,7 +143,8 @@ function AuthenticatedApp() {
       search={globalSearch}
       onSearch={setGlobalSearch}
       user={auth.user!}
-      onLogout={auth.logout}
+      onLogout={() => setLogoutOpen(true)}
+      onSettings={() => setActivePage("settings")}
     >
       {activePage === "dashboard" && (
         <DashboardPage
@@ -157,10 +160,21 @@ function AuthenticatedApp() {
       {activePage === "calendar" && <CalendarPage tasks={visibleTasks} />}
       {activePage === "reports" && <ReportsPage tasks={visibleTasks} summary={tasksState.summary} onToast={setToast} />}
       {activePage === "flows" && <FlowsPage />}
-      {activePage === "settings" && <SettingsPage showDemo={tasksState.showDemo} setShowDemo={tasksState.setShowDemo} user={auth.user!} isAuthenticated={auth.isAuthenticated} onLogout={auth.logout} />}
+      {activePage === "settings" && <SettingsPage showDemo={tasksState.showDemo} setShowDemo={tasksState.setShowDemo} user={auth.user!} isAuthenticated={auth.isAuthenticated} onLogout={() => setLogoutOpen(true)} />}
 
       <TaskFormDrawer open={formOpen} task={editingTask} projects={projects} onClose={() => setFormOpen(false)} onSave={saveTask} />
       <TaskDetailPanel task={viewingTask} onClose={() => setViewingTask(null)} onEdit={openEditTask} onFinish={finishTask} onDelete={deleteTask} onDuplicate={duplicateTask} />
+      <LogoutConfirmModal
+        open={logoutOpen}
+        onCancel={() => setLogoutOpen(false)}
+        onConfirm={() => {
+          setLogoutOpen(false);
+          setFormOpen(false);
+          setViewingTask(null);
+          setEditingTask(null);
+          auth.logout();
+        }}
+      />
       <Toast message={toast} onClose={() => setToast("")} />
     </AppLayout>
   );

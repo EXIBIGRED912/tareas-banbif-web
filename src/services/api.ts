@@ -78,8 +78,9 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
       if (error.status === 401) {
         sessionStorage.removeItem("auth_token");
         sessionStorage.removeItem("auth_user");
+        sessionStorage.removeItem("auth_session");
         window.dispatchEvent(new CustomEvent("auth:expired", {
-          detail: { message: "Tu sesion expiro, vuelve a iniciar sesion" },
+          detail: { message: "Tu sesión expiró, vuelve a iniciar sesión." },
         }));
       }
       throw error;
